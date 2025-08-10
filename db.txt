@@ -1,0 +1,80 @@
+use bankmanagementsystem;
+show tables;
+show create table bank;
+show create table login;
+show create table signup;
+show create table signup2;
+show create table signup3;
+select * from signup3;
+drop table signup3;
+/--------------------------------------------------------------------------------------------/
+
+create table signup3(
+formno3 int primary key,
+accountType varchar(20) not null,
+cardnumber bigint unique not null,
+pin int not null,
+facility varchar(255) );
+
+/--------------------------------------------------------------------------------------------------/
+
+DELIMITER //
+CREATE TRIGGER enforce_pin_range
+BEFORE INSERT ON signup3
+FOR EACH ROW
+BEGIN
+    IF NEW.pin < 1000 OR NEW.pin > 9999 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'PIN must be between 1000 and 9999.';
+    END IF;
+END;
+//
+DELIMITER ;
+/----------------------------------------------------------------------------------------/
+
+DELIMITER //
+CREATE TRIGGER enforce_unique_cardnumber
+BEFORE INSERT ON signup3
+FOR EACH ROW
+BEGIN
+    IF (SELECT COUNT(*) FROM signup3 WHERE cardnumber = NEW.cardnumber) > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Card Number must be unique.';
+    END IF;
+END;
+//
+DELIMITER ;
+
+
+SELECT Signup., Signup2.
+FROM Signup
+INNER JOIN Signup2 ON Signup.formno = Signup2.formno;
+
+SELECT Signup., Signup3.
+FROM Signup
+INNER JOIN Signup3 ON Signup.formno = Signup3.formno;
+
+SELECT Signup2.category, COUNT(*) as category_count
+FROM Signup2
+INNER JOIN Signup ON Signup2.formno = Signup.formno
+GROUP BY Signup2.category;
+
+SELECT bank.type, COUNT(*) as deposit_count
+FROM bank
+GROUP BY bank.type;
+
+SELECT * FROM Signup3;
+UPDATE signup3
+SET accountType = 'Current Account'
+WHERE formno = 9;
+DELETE FROM Signup3
+WHERE formno = 11;
+SELECT * FROM Signup3
+WHERE accountType = 'Saving Account';
+SELECT COUNT(*) AS TotalRecords FROM Signup3;
+SELECT * FROM Signup3
+WHERE accountType = 'Saving Account' AND facility = 'Mobile Banking';
+SELECT MAX(pin) AS MaxPin, MIN(pin) AS MinPin
+FROM Signup3;
+SELECT * FROM Signup3
+ORDER BY cardnumber ASC;
